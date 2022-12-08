@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div>
+    <div>
+        <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" height="80px">
+        <h1>{{ user.username }}</h1>
+    </div>
+    <div>
+        <form method="POST">
+            {{form.hidden_tag()}}
+            {% for field in form  
+                if field.widget.input_type != 'hidden' %}
+                <p>
+                    
+                    {{field.label}}
+                    {{field (multiple=True)}}
+                
+                    {% for err in field.errors %}
+                    {{err}}
+                    {% endfor %}
+                </p>
+            {% endfor %}
+            <button>Save</button>    
+        </form>
+    </div>
+</div>
+
+{% endblock %}

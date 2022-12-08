@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="recipe">
+    <h1>{{recipe.title}}</h1>
+    <img src="{{ recipe.image }}" alt="{{ recipe.title }}">
+    <div class="details">
+        <h6>Health score: {{ recipe.healthScore }}</h6>
+        {% if recipe.cuisines %}
+            <h6>Cuisines:</h6>
+            <ul>
+            {% for cuis in recipe.cuisines %}
+                <li>{{ cuis }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% if recipe.diets %}
+            <h6>Diets:</h6>
+            <ul>
+            {% for diet in recipe.diets %}
+                <li>{{ diet }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {{ recipe.summary|safe }}
+        <h6>Ingredients:</h6>
+            <ul>
+                {%for ing in recipe.extendedIngredients %}
+                    <li>{{ing.name}} {{ing.amount}} {{ing.unit}}</li>               
+                {% endfor %}
+            </ul>
+        <h6>Instructions:</h6>
+        {{ recipe.instructions|safe}}
+        {% if recipe.winePairing.pairingText %}
+            <h6>Wine Pairings:</h6>
+            {{ recipe.winePairing.pairingText }}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

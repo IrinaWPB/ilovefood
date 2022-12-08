@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Recipes of the day</h1>
+<div class="recipes home-recipes">
+    {% for recipe in recipes %}
+        <a href="/recipes/{{recipe.id}}">
+        <h3>{{ recipe.title }} <b>{{ recipe.healthScore }}</b></h3>
+        <img src="{{recipe.image}}" alt="">
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}
