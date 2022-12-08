@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 import requests
 from key import api_key
 from forms import UserAddForm, UserLoginForm, UserEditForm
-
+from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Recipe, Favorites
 
 CURR_USER_KEY = "curr_user"
