@@ -1,41 +1,82 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="recipe">
+<div class="container-fluid main-home recipe">
+    
+    <div class="recipe-card">
     <h1>{{recipe.title}}</h1>
-    <img src="{{ recipe.image }}" alt="{{ recipe.title }}">
-    <div class="details">
-        <h6>Health score: {{ recipe.healthScore }}</h6>
-        {% if recipe.cuisines %}
-            <h6>Cuisines:</h6>
-            <ul>
-            {% for cuis in recipe.cuisines %}
-                <li>{{ cuis }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        {% if recipe.diets %}
-            <h6>Diets:</h6>
-            <ul>
-            {% for diet in recipe.diets %}
-                <li>{{ diet }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        {{ recipe.summary|safe }}
-        <h6>Ingredients:</h6>
-            <ul>
-                {%for ing in recipe.extendedIngredients %}
-                    <li>{{ing.name}} {{ing.amount}} {{ing.unit}}</li>               
-                {% endfor %}
-            </ul>
-        <h6>Instructions:</h6>
-        {{ recipe.instructions|safe}}
-        {% if recipe.winePairing.pairingText %}
-            <h6>Wine Pairings:</h6>
-            {{ recipe.winePairing.pairingText }}
-        {% endif %}
-    </div>
-</div>
+    <div class="row info-details">
+        <div class="d-none d-xl-block col-xl-4 info">
 
+            <div class="recipe-img">
+                <img src="{{ recipe.image }}" alt="{{ recipe.title }}" width="100%">
+                <h6 class="health-score">Health score: {{ recipe.healthScore }}</h6>
+            </div>
+            
+            <div class="row details">
+                {% if recipe.cuisines %}
+                <div class="col-5 cuisines">
+                    <h5>Cuisines:</h5>
+                    <ul>
+                    {% for cuis in recipe.cuisines %}
+                        <li>{{ cuis }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                {% if recipe.diets %}
+                <div class="col-5 diets">
+                    <h5>Diets:</h5>
+                    <ul>
+                    {% for diet in recipe.diets %}
+                        <li>{{ diet }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-10 col-lg-6 ingredients-summary">
+            <div class="ingredients">
+                <h5>Ingredients:</h5>
+                <ul>
+                {%for ing in recipe.extendedIngredients %}
+                    <li>{{ing.name}} 
+                        {%if ing.amount|int != 0 %} 
+                        {{ing.amount|int}} 
+                        {% else %}
+                            {{ing.amount|float|round(1)}}
+                        {% endif %}
+                        {{ing.unit}}</li>               
+                {% endfor %}
+                </ul>
+            </div>
+            <p class="summary-text">
+                {% for fact in recipe.summary.split('. ') %}
+                    {% if "a href" not in fact and "spoonacular" not in fact %}
+                        <span>{{fact|safe}}. </span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>      
+    </div>
+
+    <div class="row instructions-wine">
+        <div class="col-10 instructions">
+            <div>
+                <h5>Instructions:</h5>
+                {{recipe.instructions|safe}}
+            </div>
+
+            {% if recipe.winePairing.pairingText %}
+            <div>
+                <h5>Wine Pairings:</h5>
+                {{ recipe.winePairing.pairingText }}
+            </div>    
+            {% endif %}
+        </div>
+    </div>    
+</div>
+</div>
 {% endblock %}

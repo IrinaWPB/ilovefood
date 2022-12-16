@@ -10,7 +10,6 @@ from models import db, connect_db, User, Recipe, Favorites
 
 CURR_USER_KEY = "curr_user"
 
-
 app = Flask(__name__)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
@@ -33,7 +32,6 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-
     else:
         g.user = None
 
@@ -48,8 +46,9 @@ def do_logout():
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
-def get_recipes(n, params=''):
-    res = requests.get(f'https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&number={n}{params}')
+
+def get_recipes(n, params='', offset=''):
+    res = requests.get(f'https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&number={n}{params}{offset}')
     j_recipes = res.json()
     return j_recipes['results']
 
@@ -65,7 +64,18 @@ def convert_to_list(str):
 @app.route('/')
 def homepage():
     """Welcome page"""
-    recipes = get_recipes(2)
+
+    # current_offset = session.get('offset', 0)
+    # session['offset'] = current_offset + 12
+    # offset = f'&offset={current_offset+12}'
+    # print(current_offset, offset, session['offset']) 
+
+    if session.get('random_recipes'):
+        recipes = session['random_recipes']
+    else:
+        recipes = get_recipes(12, offset)
+        session['random_recipes'] = recipes  
+     
     return render_template('homepage.html', recipes = recipes)
 
 @app.route('/register', methods=["GET", "POST"])
@@ -107,7 +117,6 @@ def signin():
 
         if user:
             do_login(user)
-            flash(f"Hello, {user.username}!", "success")
             return redirect(f'/users/{user.id}')
 
         flash("Invalid credentials.", 'danger')
@@ -133,47 +142,91 @@ def user_homepage(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    # convert to dict
+    if request.method == "POST":
+        clicked_recipe_id = request.form['rec_to_save']
+
+        if not Recipe.query.get(clicked_recipe_id):
+            fav_recipe = get_recipe(clicked_recipe_id)
+            recipe = Recipe(id = fav_recipe['id'],
+                            title = fav_recipe['title'],
+                            image = fav_recipe['image']
+                            )
+            db.session.add(recipe) 
+            db.session.commit() 
+
+        favorite = Favorites(recipe_id = clicked_recipe_id,
+                            user_id = user_id)
+        db.session.add(favorite)
+        db.session.commit()
+            
+        return redirect(f'/users/{user_id}')
+
+    # -------------------Build query string for user request-----------------------
+
+    # convert user object to dict
     user_dict = user.__dict__
     query = ''
     prefs = {}
 
-    # build query string for user request
-    for key,value in user_dict.items():
-        if value and key in ['intolerances', 'cuisine', 'diet', 'excludeIngredients']:
+    # ingredients to exclude
+    if user.excludeIngredients:
+        exclude = user.excludeIngredients.replace(' ', '')
+        query = f'&excludeIngredients={exclude}' 
 
+    for key,value in user_dict.items():
+        if value and key in ['intolerances', 'cuisine', 'diet']:
             #build formatted preference  dictionary
             prefs[key] = []
             for val in convert_to_list(value):
-                query += f'&{key}={val}' 
-                if val != '':
-                    #adding values to properties
-                    prefs[key].append(val)          
-               
-    recipes = get_recipes(5, query)
+                if val:
+                    query += f'&{key}={val}' 
+                    if val != '':
+                        #adding values to properties of preference object
+                        prefs[key].append(val)    
     
-    if request.method == "POST":
-        rec_id = request.form['rec_to_save']
-        fav_recipe = get_recipe(rec_id)
-        recipe = Recipe(id = fav_recipe['id'],
-                        title = fav_recipe['title'],
-                        image = fav_recipe['image']
-                        )
-        db.session.add(recipe) 
-        db.session.commit()               
-        favorite = Favorites(recipe_id = fav_recipe['id'],
-                              user_id = user_id)
+    # check if the page was already visited, if not - load 4 new recipes
+    if session.get('recipes'):
+        recipes = session['recipes']
+       
+    else:
+        recipes = get_recipes(4, query)
+        session['recipes'] = recipes
+    
+    
+    # if user adds data to "by ingerdient" search form, add data to the main request query
+    user_search_ing = request.args.get('search_by_ingredients')
+    if user_search_ing:
+        user_search_ing = user_search_ing.replace(' ', '')
+        query = f'{query}&includeIngredients={user_search_ing}'
         
-        db.session.add(favorite)
-        db.session.commit()
+    # add data (if submitted) from "by dish" search form
+    user_search_dish = request.args.get('search_by_dish')
+    if user_search_dish:
+        query = f'{query}&titleMatch={user_search_dish}'
 
-        return redirect(f'/users/{user_id}/favorites')
+    # add data (if submitted) from "by calories" search form
+    user_search_calories = request.args.get('search_by_calories')
+    if user_search_calories:
+        query = f'{query}&maxCalories={user_search_calories}'
+
+    # checks if user used a search form
+    if user_search_dish or user_search_calories or user_search_ing:
+
+        recipes = get_recipes(4, query)
+        session['recipes'] = recipes
+
+    
+    # create list of favorite ids to check if recipe needs an "add to favs" option 
+    favs = []
+    for fav in user.favorites:
+        favs.append(fav.id)
 
     return render_template('users/user_homepage.html', 
-                            user=user, 
+                            user=user,
                             prefs = prefs, 
-                            recipes = recipes
-                           )
+                            recipes = recipes,
+                            favs = favs)
+                           
 
 @app.route('/users/<int:user_id>/favorites', methods=["POST", "GET"])
 def show_favorite_recipes(user_id):
@@ -185,7 +238,6 @@ def show_favorite_recipes(user_id):
 
     user = User.query.get_or_404(user_id)
     recipes = user.favorites
-    print(recipes)
 
     if request.method == "POST":
         Favorites.query.filter_by(recipe_id = request.form['rec_to_delete']).delete()
@@ -228,4 +280,5 @@ def show_recipe_details(recipe_id):
         return redirect('/register')
 
     recipe = get_recipe(recipe_id)
+
     return render_template("recipes/recipe.html", recipe = recipe)

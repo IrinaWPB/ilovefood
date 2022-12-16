@@ -1,13 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Recipes of the day</h1>
-<div class="recipes home-recipes">
-    {% for recipe in recipes %}
-        <a href="/recipes/{{recipe.id}}">
-        <h3>{{ recipe.title }} <b>{{ recipe.healthScore }}</b></h3>
-        <img src="{{recipe.image}}" alt="">
-        </a>
-    {% endfor %}
+<div class="container-fluid main-home">
+    <h1>Recipes of the day</h1>
+    <div class="recipes home-recipes">
+        <div class="row recipe-row">
+            {% for recipe in recipes %}
+                <div class="col-12 col-md-6 col-lg-4 col-xxl-3">
+                    <div class="card">
+                        <a href="/recipes/{{recipe.id}}" class="details">
+                            <h6 class="card-title">{{ recipe.title }}</h6>  
+                            <img src="{{recipe.image}}" alt="" class="card-img-top">
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}

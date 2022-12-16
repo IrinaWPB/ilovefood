@@ -1,25 +1,31 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% if recipes %}
-<h1>My Favorite Recipes</h1>
-<div class="recipes user-recipes" id="fav-recipes">
-    {% for recipe in recipes %}
-        <a href="/recipes/{{recipe.id}}">
-            <h3>{{ recipe.title }} <b>{{ recipe.healthScore }}</b></h3>
-            <img src="{{recipe.image}}" alt="">
-        </a>
-        <form action="" method="POST" id="delete-btn">
-            <button>
-                <input type="integer" name="rec_to_delete" hidden value="{{recipe.id}}">
-                <i class="fa-solid fa-trash-can" style="color:rgb(4, 171, 237)"></i>
-            </button>
-        </form>
-    {% endfor %}
+<div class="container-fluid main-home">
+    {% if recipes %}
+        <h1>My Favorite Recipes</h1>
+        <div class="recipes user-recipes" id="fav-recipes">
+            <div class="row">
+                {% for recipe in recipes %}
+                    <div class="col-12 col-md-6 col-lg-4 col-xxl-3">
+                        <div class="card">
+                            <a href="/recipes/{{recipe.id}}" class="details">
+                                <h6 class="card-title">{{ recipe.title }}</h6>  
+                                <img src="{{recipe.image}}" alt="" class="card-img-top">
+                            </a>
+                            <form action="" method="POST" id="delete-btn">
+                                <button class="side-btn">
+                                    <input type="integer" name="rec_to_delete" hidden value="{{recipe.id}}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </div>  
+                    </div>   
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <h1>No recipes added yet.</h1>
+    {% endif %}
 </div>
-{% else %}
-<h1>No recipes added yet.</h1>
-{% endif %}
-
-<a href="/users/{{user.id}}" class="btn btn-secondary">Back to profile</a>
 {% endblock %}

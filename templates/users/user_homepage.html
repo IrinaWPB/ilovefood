@@ -1,72 +1,97 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div>
-    <div>
-        <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" height="80px">
-        <h1>{{ user.username }}</h1>
-    </div>
-    <div class="recipes user-recipes">
-        <h2>Today's pick:</h2>
-        <ul>
+<div class="container-fluid main-home">
+    <div class="row user-row">
+        <div class="col-2 d-none d-xxl-block">
+            <div class="user-info">
+                <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" width="100%">
+                <h2>{{ user.username }}</h2>
+            </div>
+            {% if prefs %}
+            <div class="preferences">           
+                    {% if prefs.diet %}
+                        <h5>Prefered Diet:</h5>
+                        {% for d in prefs.diet %}
+                            <li>{{ d }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% if prefs.intolerances %}
+                        <h5>Allergies:</h5>
+                        {% for i in prefs.intolerances %}
+                            <li>{{ i }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% if prefs.cuisine %}
+                        <h5>Prefered Cuisine:</h5>
+                        {% for c in prefs.cuisine %}
+                            <li>{{ c }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% if user.excludeIngredients %}
+                        <h5>Exclude:</h5> 
+                        {% for e in user.excludeIngredients.split(',') %}
+                            <li>{{ e }}</li>
+                        {% endfor %}
+                    {% endif %}
+                {% endif %}     
+            </div>
+        </div>
+    
+
+        <div class="col-12 col-lg-6">
+            <h1>Today's pick:</h1>
+            <div class="row recipes user-recipes">
             {% for recipe in recipes %}
-                <a href="/recipes/{{recipe.id}}">
-                    <h3>{{ recipe.title }} <b>{{ recipe.healthScore }}</b></h3>
-                    <img src="{{recipe.image}}" alt="">
-                    <form action="" method="POST" id="save-btn">
-                        <input type="integer" hidden name="rec_to_save" value="{{recipe.id}}">
-                        <button><i class="fas fa-heart" style="color:red"></i></button>
-                    </form>   
-                </a>
-             {% endfor %}
-        </ul>
-    </div>
+                <div class="col-12 col-xxl-6 ">
+                    
+                    <div class="card">
+                        <a href="/recipes/{{recipe.id}}" class="details">
+                            <h6 class="card-title">{{ recipe.title }}</h6>  
+                            <img src="{{recipe.image}}" alt="" class="card-img-top">
+                        </a>
+                        {% if recipe.id not in favs %}
+                        <form action="" method="POST" id="save-btn">
+                            <button class="side-btn">
+                                <input type="integer" name="rec_to_save" hidden value="{{recipe.id}}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </form>  
+                        {% endif %}  
+                    </div>     
 
-    <div class="search">
-        <h5>What's in your fridge?:</h5>
-        <form class="form-inline my-2 my-lg-0" action="">
-        <input class="form-control mr-sm-2" name="search" type="search" placeholder="Enter ingredients separated with commas" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Find Recipes</button>
-      </form>
-    </div>
-    
-    
-    <div class="prferences">
+                </div>   
+            {% endfor %}
+            </div>
+        </div>    
         
-        {% if prefs.diet %}
-            <h5>Prefered Diet:</h5>
-            {% for d in prefs.diet %}
-                <li>{{ d }}</li>
-            {% endfor %}
-        {% endif %}
-        {% if prefs.intolerances %}
-            <h5>Allergies:</h5>
-            {% for i in prefs.intolerances %}
-                <li>{{ i }}</li>
-            {% endfor %}
-        {% endif %}
-        {% if prefs.cuisine %}
-            <h5>Prefered Cuisine:</h5>
-            {% for c in prefs.cuisine %}
-                <li>{{ c }}</li>
-            {% endfor %}
-        {% endif %}
-
-        {% if prefs.excludeIngredients %}
-            <h5>Exclude:</h5> 
-            {% for e in prefs.excludeIngredients %}
-                <li>{{ e }}</li>
-            {% endfor %}
-        {% endif %}
-    </div>
-    <div class="search">
-        <div class="by_dish">
-            Search field by dish: TBD
-        </div>
-        <div class="by_product">
-            Search field by product: TBD
+        <div class="col-12 col-lg-6 col-xxl-4">
+            <div class="search">
+                <div id="search_by_ing">
+                    <h5>What's in your fridge?:</h5>
+                        <form class="form-inline" action="">
+                            <input class="form-control" name="search_by_ingredients" type="search" placeholder="Enter ingredients separated with commas" aria-label="Search">                           
+                            <button class="btn btn-success" type="submit">Find Recipes</button>
+                        </form>
+                </div>
+                <div id="search_by_dish">
+                    <h5>What are you cooking?</h5>
+                        <form class="form-inline" action="">
+                            <input class="form-control" name="search_by_dish" type="search" placeholder="Enter name of the dish" aria-label="Search">
+                            <button class="btn btn-success" type="submit">Find Recipes</button>
+                        </form>
+                </div>
+                <div id="calorie_count">
+                    <h5>Counting calories?</h5>
+                        <form class="form-inline" action="">
+                            <input class="form-control" name="search_by_calories" type="search" placeholder="Enter maximum calories per serving" aria-label="Search">
+                            <button class="btn btn-success" type="submit">Find Recipes</button>
+                        </form>
+                </div>
+            </div>
         </div>
     </div>
     
+
 </div>
 {% endblock %}

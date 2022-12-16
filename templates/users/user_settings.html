@@ -1,27 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div>
-    <div>
-        <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" height="80px">
-        <h1>{{ user.username }}</h1>
-    </div>
-    <div>
+<div class="container-fluid main-home">
+    <div class="setting-card">
+    
         <form method="POST">
+            <div class="row update-form">
             {{form.hidden_tag()}}
-            {% for field in form  
-                if field.widget.input_type != 'hidden' %}
-                <p>
-                    
-                    {{field.label}}
-                    {{field (multiple=True)}}
+
+                <div class="col-12 col-lg-6 col-xl-2">
+                    <div class="user-info">
+                        <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" width="100%">
+                        <h2>{{ user.username }}</h2>
+                    </div>
+                    <div class="prefilled-fields">
+                        <p>{{form.username.label}}: {{form.username}}</p>
+                        <p>{{form.email.label}}: {{form.email}}</p>
+                        <p>{{form.image_url.label}}: {{form.image_url}}</p>
+                    </div>
+               </div>
+            
                 
-                    {% for err in field.errors %}
-                    {{err}}
-                    {% endfor %}
-                </p>
-            {% endfor %}
-            <button>Save</button>    
+                <div class="col-12 col-lg-6 col-xl-3 ">
+                    {{form.cuisine.label}}{{form.cuisine (multiple=true)}}
+                </div>
+            
+                <div class="col-12 col-lg-6 col-xl-3">
+                    {{form.intolerances.label}}{{form.intolerances (multiple=true)}}
+                    {{form.excludeIngredients.label}}{{form.excludeIngredients (multiple=true)}}
+                </div>
+
+                <div class="col-12 col-lg-6 col-xl-3">
+                    {{form.diet.label}}{{form.diet (multiple=true)}}
+                </div>
+
+               <button class="btn btn-info save-preferences">Save</button> 
+            </div>
         </form>
     </div>
 </div>
