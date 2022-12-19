@@ -4,19 +4,19 @@
 <div class="container-fluid main-home">
     <div class="setting-card">
     
-        <form method="POST">
+        <form class="form-inline" method="POST">
             <div class="row update-form">
             {{form.hidden_tag()}}
 
-                <div class="col-12 col-lg-6 col-xl-2">
+                <div class="col-10 col-xl-5 col-xxl-2">
                     <div class="user-info">
                         <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" width="100%">
-                        <h2>{{ user.username }}</h2>
+                        <h2 class="user-name">{{ user.username }}</h2>
                     </div>
                     <div class="prefilled-fields">
-                        <p>{{form.username.label}}: {{form.username}}</p>
-                        <p>{{form.email.label}}: {{form.email}}</p>
-                        <p>{{form.image_url.label}}: {{form.image_url}}</p>
+                        <p>{{form.username.label}}: {{form.username(class="input-field form-control")}}</>
+                        <p>{{form.email.label}}: {{form.email(class="input-field form-control")}}</p>
+                        <p>{{form.image_url.label}}: {{form.image_url(class="input-field form-control")}}</p>
                     </div>
                </div>
             
@@ -27,7 +27,7 @@
             
                 <div class="col-12 col-lg-6 col-xl-3">
                     {{form.intolerances.label}}{{form.intolerances (multiple=true)}}
-                    {{form.excludeIngredients.label}}{{form.excludeIngredients (multiple=true)}}
+                    {{form.excludeIngredients.label}}{{form.excludeIngredients (multiple=true, class="form-control")}}
                 </div>
 
                 <div class="col-12 col-lg-6 col-xl-3">

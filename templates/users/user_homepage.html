@@ -2,96 +2,104 @@
 {% block content %}
 
 <div class="container-fluid main-home">
-    <div class="row user-row">
-        <div class="col-2 d-none d-xxl-block">
-            <div class="user-info">
-                <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" width="100%">
-                <h2>{{ user.username }}</h2>
-            </div>
-            {% if prefs %}
-            <div class="preferences">           
-                    {% if prefs.diet %}
-                        <h5>Prefered Diet:</h5>
-                        {% for d in prefs.diet %}
-                            <li>{{ d }}</li>
-                        {% endfor %}
-                    {% endif %}
-                    {% if prefs.intolerances %}
-                        <h5>Allergies:</h5>
-                        {% for i in prefs.intolerances %}
-                            <li>{{ i }}</li>
-                        {% endfor %}
-                    {% endif %}
-                    {% if prefs.cuisine %}
-                        <h5>Prefered Cuisine:</h5>
-                        {% for c in prefs.cuisine %}
-                            <li>{{ c }}</li>
-                        {% endfor %}
-                    {% endif %}
-                    {% if user.excludeIngredients %}
-                        <h5>Exclude:</h5> 
-                        {% for e in user.excludeIngredients.split(',') %}
-                            <li>{{ e }}</li>
-                        {% endfor %}
-                    {% endif %}
-                {% endif %}     
-            </div>
-        </div>
-    
+    <div class="profile-card">
+        <div class="row user-row">
+            <div class="col-2 d-none d-xxl-block">
+                <h2>My info</h2>
+                <div class="user-info">
+                    <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" id="avatar" width="100%">
+                    <h2>{{ user.username }}</h2>
+                </div>
 
-        <div class="col-12 col-lg-6">
-            <h1>Today's pick:</h1>
-            <div class="row recipes user-recipes">
-            {% for recipe in recipes %}
-                <div class="col-12 col-xxl-6 ">
-                    
-                    <div class="card">
-                        <a href="/recipes/{{recipe.id}}" class="details">
-                            <h6 class="card-title">{{ recipe.title }}</h6>  
-                            <img src="{{recipe.image}}" alt="" class="card-img-top">
-                        </a>
-                        {% if recipe.id not in favs %}
-                        <form action="" method="POST" id="save-btn">
-                            <button class="side-btn">
-                                <input type="integer" name="rec_to_save" hidden value="{{recipe.id}}">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </form>  
-                        {% endif %}  
-                    </div>     
-
-                </div>   
-            {% endfor %}
+                
+                {% if prefs %}
+                    <div class="preferences">      
+                        {% if prefs.diet %}
+                            <h5>Prefered Diet:</h5>
+                            {% for d in prefs.diet %}
+                                <li>{{ d }}</li>
+                            {% endfor %}
+                        {% endif %}
+                        {% if prefs.intolerances %}
+                            <h5>Allergies:</h5>
+                            {% for i in prefs.intolerances %}
+                                <li>{{ i }}</li>
+                            {% endfor %}
+                        {% endif %}
+                        {% if prefs.cuisine %}
+                            <h5>Prefered Cuisine:</h5>
+                            {% for c in prefs.cuisine %}
+                                <li>{{ c }}</li>
+                            {% endfor %}
+                        {% endif %}
+                        {% if user.excludeIngredients %}
+                            <h5>Exclude:</h5> 
+                            {% for e in user.excludeIngredients.split(',') %}
+                                <li>{{ e }}</li>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}   
             </div>
-        </div>    
+
+            <div class="col-12 col-xxl-6 d-none d-md-block">
+                <h1>Recipes</h1>
+                <div class="row">
+            
+            {% if recipes %}
+                {% for recipe in recipes %}
+                    <div class="col-12 col-lg-6 ">    
+                        <div class="card">
+                            <a href="/recipes/{{recipe.id}}" class="details">
+                                <h6 class="card-title">{{ recipe.title }}</h6>  
+                                <img src="{{recipe.image}}" alt="" class="card-img-top">
+                            </a>
+                            {% if recipe.id not in favs %}
+                            <form action="" method="POST" id="save-btn">
+                                <button class="side-btn">
+                                    <input type="integer" name="rec_to_save" hidden value="{{recipe.id}}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </form>  
+                            {% endif %}  
+                        </div>     
+                    </div>   
+                {% endfor %}
+                {% else %}
+                <h3>No matching recipes found for the given search criteria.</h3>
+                {% endif %}
+                </div>
+            </div>
         
-        <div class="col-12 col-lg-6 col-xxl-4">
-            <div class="search">
-                <div id="search_by_ing">
-                    <h5>What's in your fridge?:</h5>
-                        <form class="form-inline" action="">
-                            <input class="form-control" name="search_by_ingredients" type="search" placeholder="Enter ingredients separated with commas" aria-label="Search">                           
-                            <button class="btn btn-success" type="submit">Find Recipes</button>
-                        </form>
-                </div>
-                <div id="search_by_dish">
-                    <h5>What are you cooking?</h5>
-                        <form class="form-inline" action="">
-                            <input class="form-control" name="search_by_dish" type="search" placeholder="Enter name of the dish" aria-label="Search">
-                            <button class="btn btn-success" type="submit">Find Recipes</button>
-                        </form>
-                </div>
-                <div id="calorie_count">
-                    <h5>Counting calories?</h5>
-                        <form class="form-inline" action="">
-                            <input class="form-control" name="search_by_calories" type="search" placeholder="Enter maximum calories per serving" aria-label="Search">
-                            <button class="btn btn-success" type="submit">Find Recipes</button>
-                        </form>
+            <div class="col-12 col-xxl-4">
+                <div class="search">
+                    <h2>Find more recipes:</h2>
+                    <div id="search_by_ing">
+                        <h5>What's in your fridge?:</h5>
+                            <form class="form-inline" action="">
+                                <input class="form-control" name="search_by_ingredients" type="search" placeholder="Enter ingredients separated with commas" aria-label="Search">                           
+                                <button class="btn btn-success" type="submit">Find Recipes</button>
+                            </form>
+                    </div>
+                    <div id="search_by_dish">
+                        <h5>What are you cooking?</h5>
+                            <form class="form-inline" action="">
+                                <input class="form-control" name="search_by_dish" type="search" placeholder="Enter name of the dish" aria-label="Search">
+                                <button class="btn btn-success" type="submit">Find Recipes</button>
+                            </form>
+                    </div>
+                    <div id="calorie_count">
+                        <h5>Counting calories?</h5>
+                            <form class="form-inline" action="">
+                                <input class="form-control" name="search_by_calories" type="search" placeholder="Enter maximum calories per serving" aria-label="Search">
+                                <button class="btn btn-success" type="submit">Find Recipes</button>
+                            </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+</div>
 
 </div>
 {% endblock %}

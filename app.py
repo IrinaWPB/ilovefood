@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Recipe, Favorites
 
 CURR_USER_KEY = "curr_user"
+offset = 0
 
 app = Flask(__name__)
 
@@ -39,11 +40,17 @@ def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
+    # print(session.get('offset'))
+    # offset = session.get('offset', 0)
+    # print(offset)
 
 def do_logout():
     """Logout user."""
 
     if CURR_USER_KEY in session:
+        # print(session['offset'])
+        # session['offset'] = session['offset'] + 4
+        # print(session['offset'])
         del session[CURR_USER_KEY]
 
 
@@ -61,22 +68,38 @@ def convert_to_list(str):
     lst = str.replace('{', '').replace('}', '').replace('"', '').split(',')
     return lst
 
+def get_query_string(user):
+    query = ''
+    # ingredients to exclude
+    if user.excludeIngredients:
+        exclude = user.excludeIngredients.replace(' ', '')
+        query = f'&excludeIngredients={exclude}' 
+    
+    user_dict = user.__dict__
+    for key,value in user_dict.items():
+        if value and key in ['intolerances', 'cuisine', 'diet']:
+            for val in convert_to_list(value):
+                if val:
+                    query += f'&{key}={val}' 
+    return query
+    
+
 @app.route('/')
 def homepage():
     """Welcome page"""
 
-    # current_offset = session.get('offset', 0)
-    # session['offset'] = current_offset + 12
-    # offset = f'&offset={current_offset+12}'
-    # print(current_offset, offset, session['offset']) 
-
     if session.get('random_recipes'):
         recipes = session['random_recipes']
+        offset_str = f'&offset={offset +12}'
     else:
-        recipes = get_recipes(12, offset)
-        session['random_recipes'] = recipes  
+        session['offset'] = offset + 12 
+        recipes = get_recipes(8, offset)
+        session['random_recipes'] = recipes
+    print(offset, offset_str, session['offset'])      
      
     return render_template('homepage.html', recipes = recipes)
+
+
 
 @app.route('/register', methods=["GET", "POST"])
 def signup():
@@ -127,9 +150,8 @@ def signin():
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
-
+    
     do_logout()
-    flash("You are logged out.", "info")
     return redirect('/')
 
 @app.route('/users/<int:user_id>', methods=["POST", "GET"])
@@ -140,7 +162,9 @@ def user_homepage(user_id):
         flash("Access denied", "danger")
         return redirect('/')
 
+    
     user = User.query.get_or_404(user_id)
+    
 
     if request.method == "POST":
         clicked_recipe_id = request.form['rec_to_save']
@@ -161,35 +185,25 @@ def user_homepage(user_id):
             
         return redirect(f'/users/{user_id}')
 
-    # -------------------Build query string for user request-----------------------
 
-    # convert user object to dict
-    user_dict = user.__dict__
-    query = ''
     prefs = {}
-
-    # ingredients to exclude
-    if user.excludeIngredients:
-        exclude = user.excludeIngredients.replace(' ', '')
-        query = f'&excludeIngredients={exclude}' 
-
+    user_dict = user.__dict__
     for key,value in user_dict.items():
         if value and key in ['intolerances', 'cuisine', 'diet']:
             #build formatted preference  dictionary
             prefs[key] = []
             for val in convert_to_list(value):
-                if val:
-                    query += f'&{key}={val}' 
-                    if val != '':
-                        #adding values to properties of preference object
-                        prefs[key].append(val)    
-    
+                if val != '':
+                    prefs[key].append(val)   
+
+    # offset = session['offset']
+    # query = f'{query}&offset={offset}'
     # check if the page was already visited, if not - load 4 new recipes
     if session.get('recipes'):
         recipes = session['recipes']
        
     else:
-        recipes = get_recipes(4, query)
+        recipes = get_recipes(4, get_query_string(user))
         session['recipes'] = recipes
     
     
@@ -197,21 +211,21 @@ def user_homepage(user_id):
     user_search_ing = request.args.get('search_by_ingredients')
     if user_search_ing:
         user_search_ing = user_search_ing.replace(' ', '')
-        query = f'{query}&includeIngredients={user_search_ing}'
+        query = f'{get_query_string(user)}&includeIngredients={user_search_ing}'
         
     # add data (if submitted) from "by dish" search form
     user_search_dish = request.args.get('search_by_dish')
     if user_search_dish:
-        query = f'{query}&titleMatch={user_search_dish}'
+        query = f'{get_query_string(user)}&titleMatch={user_search_dish}'
 
     # add data (if submitted) from "by calories" search form
     user_search_calories = request.args.get('search_by_calories')
     if user_search_calories:
-        query = f'{query}&maxCalories={user_search_calories}'
+        query = f'{get_query_string(user)}&maxCalories={user_search_calories}'
 
     # checks if user used a search form
     if user_search_dish or user_search_calories or user_search_ing:
-
+        
         recipes = get_recipes(4, query)
         session['recipes'] = recipes
 
@@ -267,6 +281,7 @@ def user_settings(user_id):
         user.cuisine=form.cuisine.data
         user.excludeIngredients=form.excludeIngredients.data
         db.session.commit()
+        session['recipes'] = get_recipes(4, get_query_string(user))
         return redirect(f'/users/{user_id}')
 
     return render_template('users/user_settings.html', user = user, form = form)

@@ -2,6 +2,7 @@
 {% block content %}
 
 <div class="container-fluid main-home">
+    <div class="favorites-card">
     {% if recipes %}
         <h1>My Favorite Recipes</h1>
         <div class="recipes user-recipes" id="fav-recipes">
@@ -27,5 +28,6 @@
     {% else %}
         <h1>No recipes added yet.</h1>
     {% endif %}
+</div>
 </div>
 {% endblock %}
