@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
+
 <div class="container-fluid main-home">
     <div class="home-card">
         <h1>Recipes of the day</h1>
         <div class="recipes home-recipes">
             <div class="row recipe-row">
                 {% for recipe in recipes %}
-                    <div class="col-12 col-md-6 col-lg-4 col-xxl-3">
+                    <div class="col-12 col-lg-6 col-xl-4 col-xxl-3">
                         <div class="card">
                             <a href="/recipes/{{recipe.id}}" class="details">
                                 <h6 class="card-title">{{ recipe.title }}</h6>  
@@ -17,7 +18,11 @@
                     </div>
                 {% endfor %}
             </div>
+            <form action="" method="POST" class="container navigation-btns">
+            <input class="btn btn-secondary back" type="submit" name="back" value="<<< Back">    
+            <input class="btn btn-secondary next" type="submit" name="next" value="Next >>>">
+            </form> 
         </div>
     </div>
-</div>x
+</div>
 {% endblock %}

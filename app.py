@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 import requests
 from key import api_key
@@ -8,8 +8,8 @@ from forms import UserAddForm, UserLoginForm, UserEditForm
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Recipe, Favorites
 
+
 CURR_USER_KEY = "curr_user"
-offset = 0
 
 app = Flask(__name__)
 
@@ -27,12 +27,14 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 connect_db(app)
 db.create_all()
 
+
 @app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
+        
     else:
         g.user = None
 
@@ -40,20 +42,13 @@ def do_login(user):
     """Log in user."""
 
     session[CURR_USER_KEY] = user.id
-    # print(session.get('offset'))
-    # offset = session.get('offset', 0)
-    # print(offset)
 
 def do_logout():
     """Logout user."""
 
     if CURR_USER_KEY in session:
-        # print(session['offset'])
-        # session['offset'] = session['offset'] + 4
-        # print(session['offset'])
         del session[CURR_USER_KEY]
-
-
+        
 def get_recipes(n, params='', offset=''):
     res = requests.get(f'https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&number={n}{params}{offset}')
     j_recipes = res.json()
@@ -82,24 +77,38 @@ def get_query_string(user):
                 if val:
                     query += f'&{key}={val}' 
     return query
-    
 
-@app.route('/')
+
+@app.route('/', methods=["POST", "GET"])
 def homepage():
     """Welcome page"""
+    offset = session.get('offset',0)
 
-    if session.get('random_recipes'):
-        recipes = session['random_recipes']
-        offset_str = f'&offset={offset +12}'
-    else:
-        session['offset'] = offset + 12 
-        recipes = get_recipes(8, offset)
+# --------- Navigation buttons clicked---------
+    if request.method == "POST":
+        if request.form.get('next') == 'Next >>>':
+            offset = offset + 8
+        
+        elif request.form.get('back') == '<<< Back':
+            
+            if offset >= 8:
+                offset = offset - 8
+            else:
+                offset = 0
+            
+        session['offset'] = offset
+        session['random_recipes'] = []
+        return redirect('/')
+   
+    if not session.get('random_recipes'):
+        print(offset)
+        recipes = get_recipes(8,'',f'&offset={offset}')
+        print(offset)
         session['random_recipes'] = recipes
-    print(offset, offset_str, session['offset'])      
-     
-    return render_template('homepage.html', recipes = recipes)
+       
+    recipes_to_show = session['random_recipes']
 
-
+    return render_template('homepage.html', recipes = recipes_to_show)
 
 @app.route('/register', methods=["GET", "POST"])
 def signup():
@@ -121,8 +130,10 @@ def signup():
         except IntegrityError:
             flash('Username/email already taken', 'danger')
             return render_template('users/register.html', form=form)
-
+        
+        session['query'] = ''
         do_login(user)
+        
         return redirect(f'users/{user.id}')
 
     else:
@@ -150,8 +161,9 @@ def signin():
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
-    
+
     do_logout()
+    session['recipes'] = []
     return redirect('/')
 
 @app.route('/users/<int:user_id>', methods=["POST", "GET"])
@@ -162,12 +174,11 @@ def user_homepage(user_id):
         flash("Access denied", "danger")
         return redirect('/')
 
-    
     user = User.query.get_or_404(user_id)
-    
+    index = session.get('index', 0)
 
     if request.method == "POST":
-        clicked_recipe_id = request.form['rec_to_save']
+        clicked_recipe_id = request.form.get('rec_to_save')
 
         if not Recipe.query.get(clicked_recipe_id):
             fav_recipe = get_recipe(clicked_recipe_id)
@@ -181,11 +192,12 @@ def user_homepage(user_id):
         favorite = Favorites(recipe_id = clicked_recipe_id,
                             user_id = user_id)
         db.session.add(favorite)
-        db.session.commit()
-            
-        return redirect(f'/users/{user_id}')
+        db.session.commit()    
+        return redirect(f'/users/{user.id}')
 
+#----------------get route-----------
 
+    # get formatted preference dictionary
     prefs = {}
     user_dict = user.__dict__
     for key,value in user_dict.items():
@@ -195,40 +207,29 @@ def user_homepage(user_id):
             for val in convert_to_list(value):
                 if val != '':
                     prefs[key].append(val)   
+    
+    query = session['query']
 
-    # offset = session['offset']
-    # query = f'{query}&offset={offset}'
-    # check if the page was already visited, if not - load 4 new recipes
-    if session.get('recipes'):
-        recipes = session['recipes']
-       
-    else:
-        recipes = get_recipes(4, get_query_string(user))
-        session['recipes'] = recipes
-    
-    
     # if user adds data to "by ingerdient" search form, add data to the main request query
-    user_search_ing = request.args.get('search_by_ingredients')
-    if user_search_ing:
-        user_search_ing = user_search_ing.replace(' ', '')
-        query = f'{get_query_string(user)}&includeIngredients={user_search_ing}'
-        
-    # add data (if submitted) from "by dish" search form
-    user_search_dish = request.args.get('search_by_dish')
-    if user_search_dish:
-        query = f'{get_query_string(user)}&titleMatch={user_search_dish}'
+    if request.args.get('search_by_ingredients') or request.args.get('search_by_dish') or request.args.get('search_by_calories'):
+        session['query'] = ''
+        session['index'] = 0
+        if request.args.get('search_by_ingredients'):
+            ing = request.args.get('search_by_ingredients').replace(' ', '')
+            query = f'{get_query_string(user)}&includeIngredients={ing}'
+            
+        if request.args.get('search_by_dish'):
+            dish = request.args.get('search_by_dish')
+            query = f'{get_query_string(user)}&query={dish}'
 
-    # add data (if submitted) from "by calories" search form
-    user_search_calories = request.args.get('search_by_calories')
-    if user_search_calories:
-        query = f'{get_query_string(user)}&maxCalories={user_search_calories}'
-
-    # checks if user used a search form
-    if user_search_dish or user_search_calories or user_search_ing:
-        
-        recipes = get_recipes(4, query)
-        session['recipes'] = recipes
-
+        if request.args.get('search_by_calories'):
+            cal = request.args.get('search_by_calories')
+            query = f'{get_query_string(user)}&maxCalories={cal}'
+        session['query'] = query
+    
+    recipe_list = get_recipes(100,query)
+    print(f'Current query {query}')
+    recipes_to_show = recipe_list[index:index+4]
     
     # create list of favorite ids to check if recipe needs an "add to favs" option 
     favs = []
@@ -238,9 +239,21 @@ def user_homepage(user_id):
     return render_template('users/user_homepage.html', 
                             user=user,
                             prefs = prefs, 
-                            recipes = recipes,
+                            recipes = recipes_to_show,
                             favs = favs)
                            
+@app.route('/<int:user_id>/recipes', methods=["POST"])
+def navigation(user_id):
+    index = session.get('index', 0)
+    if request.form.get('res_next') == 'Next >>>':
+        index = index + 4 
+    elif request.form.get('res_back') == '<<< Back':
+        if index >= 4:
+            index = index - 4
+        else:
+            index = 0
+    session['index'] = index
+    return redirect(f'/users/{user_id}')
 
 @app.route('/users/<int:user_id>/favorites', methods=["POST", "GET"])
 def show_favorite_recipes(user_id):
@@ -281,7 +294,11 @@ def user_settings(user_id):
         user.cuisine=form.cuisine.data
         user.excludeIngredients=form.excludeIngredients.data
         db.session.commit()
-        session['recipes'] = get_recipes(4, get_query_string(user))
+        
+        recipes_list = get_recipes(f'&number=100', get_query_string(user))
+        print(len(recipes_list))
+        recipes_to_show = recipes_list[0:4]
+        session['recipes'] = recipes_to_show
         return redirect(f'/users/{user_id}')
 
     return render_template('users/user_settings.html', user = user, form = form)

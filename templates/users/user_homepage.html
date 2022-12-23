@@ -62,9 +62,14 @@
                                 </button>
                             </form>  
                             {% endif %}  
-                        </div>     
+                        </div>   
+                         
                     </div>   
                 {% endfor %}
+                <form action="/{{user.id}}/recipes" method="POST" class="container navigation-btns">
+                    <input class="btn btn-secondary" type="submit" name="res_back" value="<<< Back">    
+                    <input class="btn btn-secondary next" type="submit" name="res_next" value="Next >>>">
+                </form>
                 {% else %}
                 <h3>No matching recipes found for the given search criteria.</h3>
                 {% endif %}
@@ -77,7 +82,7 @@
                     <div id="search_by_ing">
                         <h5>What's in your fridge?:</h5>
                             <form class="form-inline" action="">
-                                <input class="form-control" name="search_by_ingredients" type="search" placeholder="Enter ingredients separated with commas" aria-label="Search">                           
+                                <input class="form-control" name="search_by_ingredients" type="search" placeholder="Enter ingredients separated with commas" value="{{request.form.get['search_by_ingredients']}}" taria-label="Search">                           
                                 <button class="btn btn-success" type="submit">Find Recipes</button>
                             </form>
                     </div>
