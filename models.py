@@ -30,6 +30,7 @@ class User(db.Model):
         db.Text,
         nullable=False,
         unique=True,
+        index=True
     )
 
     password = db.Column(
@@ -61,8 +62,7 @@ class User(db.Model):
     favorites = db.relationship('Recipe', 
                                 secondary='favorites',
                                 backref='user')
-    # products = db.relationship('Product')
-
+    
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 

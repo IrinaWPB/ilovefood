@@ -2,9 +2,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, SelectMultipleField, widgets
 from wtforms.validators import InputRequired, Email, Length
 
-DIETS = ['Gluten Free', 'Ketogenic', 'Vegetarian', 'Lacto-Vegetarian', 'Ovo-Vegetarian', 'Vegan', 'Pescetarian', 'Paleo', 'Primal', 'Low FODMAP', 'Whole30']
+DIETS = ['Gluten Free', 'Ketogenic', 'Vegetarian', 'Lacto-Vegetarian', 'Vegan', 'Pescetarian', 'Paleo', 'Primal', 'Whole30']
 CUISINES = ['American', 'Caribbean', 'Chinese', 'Eastern European', 'French','Greek', 'Indian', 'Italian', 'Japanese', 'Korean','Latin American', 'Mediterranean',
-            'Mexican', 'Middle Eastern', 'Nordic', 'Southern','Spanish', 'Thai', 'Vietnamese']
+            'Mexican', 'Middle Eastern', 'Nordic', 'Spanish', 'Thai', 'Vietnamese']
 ALLERGIES = ['Dairy', 'Egg', 'Gluten', 'Grain', 'Peanut', 'Treenut', 'Seafood', 'Shellfish', 'Sesame', 'Soy', 'Sulfite', 'Wheat']
 
 
