@@ -6,6 +6,7 @@ from forms import UserAddForm, UserLoginForm, UserEditForm
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Recipe, Favorites
 from helper import get_recipes, get_recipe, get_query_string, convert_to_list
+from key import api_key
 
 
 CURR_USER_KEY = "curr_user"
