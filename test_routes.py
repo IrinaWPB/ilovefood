@@ -120,67 +120,120 @@ class UserViewTestCase(TestCase):
             self.assertEqual(sess[CURR_USER_KEY], 300)
             self.assertIn('testuser', str(resp.data))
     
-    # def test_navigation_no_user(self):
-    #     """Test navigation"""
-        
-    #     with app.test_client() as client:
-    #         self.assertEqual(session['offset'], 10)
-    #         offset = session['offset']
-    #         with client.session_transaction() as sess:
-    #             sess['offset'] = 8
-    #             # press next button should show next 8 recipes (so offset should be set to 18)
-    #         resp = client.post('/recipes', json={
-    #             "next":"Next >>>"
-    #         }, follow_redirects=True)
+    def test_navigation_no_user(self):
+        """Test navigation"""
+        with app.test_client() as client:
+            resp = client.post('/recipes', data={
+                "next":"Next >>>"
+            }, follow_redirects=True)
+            
+            self.assertEqual(session['offset'], 8)
+            self.assertIn('Recipes of the day', str(resp.data))
 
-    #         self.assertEqual(session['offset'], 18)
-    #         self.assertIn('Recipes of the day', str(resp.data))
-        
-    # def test_navigation_user(self):
-    #     """Test User's recipes navigation"""
 
-        # with app.test_client() as client:
-        #      with client.session_transaction() as sess:
-        #         #make sure user is logged in
-        #         sess[CURR_USER_KEY] = self.testuser_id
-        
+    def test_navigation_user(self):
+        """Test User's recipes navigation"""
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            resp = client.post(f'/{self.testuser_id}/recipes', data={
+                "res_next":"Next >>>"
+            }, follow_redirects=True)
+
+            self.assertEqual(session['index'], 4)
+            self.assertIn('My Info', str(resp.data))
+
     
-    # def test_add_to_fav(self):
-    #     """Test add to users favs"""
+    def test_add_to_fav(self):
+        """Test add to users favs"""
         
-    #     with app.test_client() as client:
-            # with client.session_transaction() as sess:
-            #     #make sure user is logged in
-            #     sess[CURR_USER_KEY] = self.testuser_id
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            resp = client.post(f'/users/{self.testuser_id}', data={
+                "rec_to_save":"646512"
+            }, follow_redirects=True)
+            saved_recipe = Recipe.query.get(646512)
+            user = User.query.get(self.testuser_id)
 
-    # def test_delete_from_fav(self):
-    #     """Test delete form favs"""
-        
-    #     with app.test_client() as client:
-            #   with client.session_transaction() as sess:
-            #     #make sure user is logged in
-            #     sess[CURR_USER_KEY] = self.testuser_id
+            # the recipe exists in Recipe table
+            self.assertIsNot(saved_recipe, None)
+            # the recipe is added to user favorites
+            self.assertIn(saved_recipe, user.favorites)
 
-    # def test_recipe_details(self):
-    #     """Test recipes details view"""
-        
-    #     with app.test_client() as client:
-                # with client.session_transaction() as sess:
-                # #make sure user is logged in
-                # sess[CURR_USER_KEY] = self.testuser_id
 
-    # def test_user_settings_get(self):
-    #     """Test user settings page"""
+    def test_delete_from_fav(self):
+        """Test delete form favs"""
         
-    #     with app.test_client() as client:
-                # with client.session_transaction() as sess:
-                # #make sure user is logged in
-                # sess[CURR_USER_KEY] = self.testuser_id
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            
+            new_favorite = Favorites(recipe_id = 646512, user_id = self.testuser_id)
 
-    # def test_user_settings_post(self):
-    #     """Test change settings route"""
+            resp = client.post(f'/users/{self.testuser_id}/favorites', data={
+                "rec_to_delete":"646512"
+            }, follow_redirects=True)
+            removed_from_favs = Recipe.query.get(646512)
+            user = User.query.get(self.testuser_id)
+
+            # the recipe is deleted from to user favorites
+            self.assertNotIn(removed_from_favs, user.favorites)
+
+    def test_recipe_details(self):
+        """Test recipes details view"""
         
-    #     with app.test_client() as client:
-                # with client.session_transaction() as sess:
-                # #make sure user is logged in
-                # sess[CURR_USER_KEY] = self.testuser_id
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            resp = client.get('/recipes/646512')
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Salmon Caesar Salad', str(resp.data))
+
+    def test_user_settings_get(self):
+        """Test user settings page"""
+        
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            resp = client.get(f'/users/{self.testuser_id}/update')
+            user = User.query.get(self.testuser_id)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(user.username, str(resp.data))
+            self.assertIn('save-preferences', str(resp.data))
+
+    def test_user_settings_post(self):
+        """Test change settings route"""
+        
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                #make sure user is logged in
+                sess[CURR_USER_KEY] = self.testuser_id
+            
+            resp = client.post(f'/users/{self.testuser_id}/update', data={
+                    "username":"testuser",
+                    "email":"hnlkh@gmail.com",
+                    "image_url":"",
+                    "diet":"Vegan",
+                    "intolerances":"Sesame",
+                    "cuisine":"American",
+                    "excludeIngredients":"egg, cheese"
+            }, follow_redirects=True)
+            
+            user = User.query.get(self.testuser_id)
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(user.diet, "{Vegan}")
+            self.assertEqual(user.intolerances, "{Sesame}")
+            self.assertEqual(user.excludeIngredients, "egg, cheese")
+            self.assertIn("<li>egg</li>", str(resp.data))
+            
+            

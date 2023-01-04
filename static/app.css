@@ -1,10 +1,223 @@
 
+body {
+  background: url('/static/bg.jpg') fixed;
+  background-position: center;
+  background-size: cover;
+}
+
+h1, h2, h3{
+  text-align: center;
+  color: rgb(255, 251, 232);
+  text-shadow: 1px 1px 10px black;
+}
+
+/* -----------navbar------------ */
+
+.navbar {
+background-color: rgb(163, 162, 162, 0.8);
+height: 70px;
+position: fixed;
+top: 0%;
+z-index: 9999;
+width: 100%;
+}
+
+.navbar-nav li a, #title {
+  color: rgb(229, 229, 229);
+  text-shadow: 1px 1px 3px black;
+}
+
+.navbar-nav li a:hover, #title:hover {
+    text-shadow: 1px 3px 5px black;
+
+} 
 .navbar-nav li{
   margin-right: 10px;
 }
 
 .navbar-nav li a{
   text-decoration: none;
-  color: black;
   font-size: 23px;
 }
+
+#title {
+  color:blanchedalmond;
+  font-size: 1.5rem;
+}
+#love {
+  color: rgb(255, 113, 113);
+}
+
+/* -----------error--------- */
+.error{
+  position: fixed;
+  top: 10%;
+}
+
+/* ------------main_divs-------*/
+
+.main{
+  margin-top: 200px;
+}
+.main-home{
+  margin-top: 100px;
+}
+
+/* ---------buttons-------- */
+
+.fa-heart {
+  color:rgb(255, 132, 132);
+  text-shadow: 1px 1px 3px rgb(0, 0, 38);
+}
+.fa-trash-can {
+  color: rgb(203, 203, 203);
+  text-shadow: 1px 1px 3px rgb(0, 0, 38); 
+}
+#delete-btn, #save-btn {
+  width: min-content;
+  position: absolute;
+  bottom: 3%;
+  right: 3%;
+}
+.side-btn {
+  border-radius: 5px;
+  background-color: rgb(168, 168, 168);
+}
+.side-btn:hover {
+  box-shadow: 1px 1px 8px black;
+}
+
+.btn-success {
+  margin-top: 3%;
+}
+
+#user_form button {
+  width: 100%;
+  margin-top: 50px;
+}
+
+.save-preferences{
+      margin: 10px 20px;
+    }
+
+.next {
+  float: right;
+}
+.navigation-btns {
+  padding-bottom: 1rem;
+  width: 90%
+}
+
+
+/* ---------user_homepage------------*/
+.user-info, .preferences, #search_by_dish, #search_by_ing, #calorie_count {
+  border: 1px solid rgb(92, 92, 92);
+  padding: 15px;
+  margin: 20px;
+  border-radius: 10px;
+  background-color:rgba(202, 202, 202, 0.4);
+  box-shadow: 1px 1px 5px black;
+  color: white;
+  text-shadow: 1px 1px 3px black;
+  position: relative;
+}
+
+/* ---------recipe details--------- */
+
+.recipe-row, .form-row {
+  justify-content: center;
+  height: fit-content;
+}
+.btn-row {
+  margin-top: 3%;
+}
+
+.card { 
+  transition: all .2s ease-in-out; 
+  position: relative;
+  margin: 30px;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 1px 1px 7px black
+}
+.card-img-top {
+  border-radius: 20px;
+}
+.card:hover { 
+  transform: scale(1.1); }
+
+.card-title {
+  position: absolute;
+  top: -5%;
+  left: 30%;
+  right: 2%;
+  border: 1px solid rgb(174, 174, 174);
+  border-radius: 12px;
+  box-shadow: 1px 1px 3px black;
+  background-color: rgb(178, 178, 178);
+  padding: 5px;
+  text-align: center;
+  color: rgb(248, 248, 248);
+  text-shadow: 1px 1px 1px black;
+  font-size: 0.9rem;
+}
+.instructions-wine, .ingredients-summary, .update-form{
+  justify-content: center;
+  padding: 1rem;
+}
+.recipe-img {
+  margin: 1rem 0;
+  position: relative;
+}
+.recipe-img img{
+  box-shadow: 1px 1px 6px black;
+  border-radius: 15px;
+}
+.details{
+  justify-content: space-evenly;
+}
+.health-score {
+  position: absolute;
+  background-color: rgb(161, 161, 161);
+  bottom: 1rem;
+  right: 1rem;
+  padding: 2px;
+  color:beige;
+  text-shadow: 1px 1px 3px black;
+  border-radius: 5px;
+}
+.ingredients-summary {
+  margin-top: 1rem;
+}
+.recipe-card, .setting-card, .profile-card, .home-card {
+  background-color: rgba(186, 186, 186, 0.678);
+  margin: 1rem 5rem; 
+  padding-top: 1rem;
+  border-radius: 15px;
+  box-shadow: 1px 1px 6px rgb(6, 0, 0);
+}
+.diets, .cuisines, .ingredients-summary, .instructions{
+  background-color: rgba(205, 205, 205, 0.51);
+  border-radius: 15px;
+  box-shadow: 1px 1px 6px rgb(6, 0, 0);
+  padding: 0.5rem;
+}
+
+/* -----------user settings--------- */
+.sign-input {
+  margin-top: 50px;
+}
+.info-details  {
+  justify-content:center;
+  margin-top: 1rem;
+}
+.home-card, .favorites-card {
+  background-color: rgba(186, 186, 186, 0.678);  
+  padding-top: 1rem;
+  border-radius: 15px;
+  box-shadow: 1px 1px 6px rgb(6, 0, 0);
+}
+.input-field {
+  width: 100%;
+}
+

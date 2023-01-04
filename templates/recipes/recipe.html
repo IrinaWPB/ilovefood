@@ -52,6 +52,7 @@
                 {% endfor %}
                 </ul>
             </div>
+            
             <p class="summary-text">
                 {% for fact in recipe.summary.split('. ') %}
                     {% if "a href" not in fact and "spoonacular" not in fact %}
